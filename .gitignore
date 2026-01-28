@@ -1,2 +1,4 @@
 feedback.db
 node_modules/
+.vercel
+.env*.local
