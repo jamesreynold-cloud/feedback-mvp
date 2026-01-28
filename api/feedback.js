@@ -1,7 +1,22 @@
 // Vercel Serverless Function for feedback API with Vercel KV storage
-import { kv } from '@vercel/kv';
+// Falls back to in-memory storage if KV is not configured
+
+let kvAvailable = false;
+let kv = null;
+
+// Try to import KV, but handle if not configured
+try {
+  const kvModule = await import('@vercel/kv');
+  kv = kvModule.kv;
+  kvAvailable = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+} catch (err) {
+  console.log('KV not available, using fallback storage');
+}
 
 const FEEDBACK_KEY = 'feedback:all';
+
+// In-memory fallback storage (resets on deployment)
+let memoryStore = null;
 
 // Initialize with sample data if empty
 const initialData = [
@@ -18,19 +33,61 @@ const initialData = [
 ];
 
 async function initializeData() {
-  const existing = await kv.get(FEEDBACK_KEY);
-  if (!existing || existing.length === 0) {
-    const feedbackStore = initialData.map((text, index) => ({
+  if (kvAvailable) {
+    try {
+      const existing = await kv.get(FEEDBACK_KEY);
+      if (!existing || existing.length === 0) {
+        const feedbackStore = initialData.map((text, index) => ({
+          id: index + 1,
+          text,
+          sentiment: null,
+          confidence: null,
+          created_at: new Date().toISOString()
+        }));
+        await kv.set(FEEDBACK_KEY, feedbackStore);
+        return feedbackStore;
+      }
+      return existing;
+    } catch (err) {
+      console.error('KV error, using fallback:', err);
+      kvAvailable = false;
+    }
+  }
+  
+  // Fallback to in-memory storage
+  if (!memoryStore) {
+    memoryStore = initialData.map((text, index) => ({
       id: index + 1,
       text,
       sentiment: null,
       confidence: null,
       created_at: new Date().toISOString()
     }));
-    await kv.set(FEEDBACK_KEY, feedbackStore);
-    return feedbackStore;
   }
-  return existing;
+  return memoryStore;
+}
+
+async function getFeedback() {
+  if (kvAvailable) {
+    try {
+      return await kv.get(FEEDBACK_KEY) || [];
+    } catch (err) {
+      kvAvailable = false;
+    }
+  }
+  return memoryStore || [];
+}
+
+async function setFeedback(data) {
+  if (kvAvailable) {
+    try {
+      await kv.set(FEEDBACK_KEY, data);
+      return;
+    } catch (err) {
+      kvAvailable = false;
+    }
+  }
+  memoryStore = data;
 }
 
 export default async function handler(req, res) {
@@ -64,7 +121,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Feedback text is required' });
       }
 
-      let feedbackStore = await kv.get(FEEDBACK_KEY) || [];
+      let feedbackStore = await getFeedback();
       
       const newFeedback = {
         id: feedbackStore.length > 0 ? Math.max(...feedbackStore.map(f => f.id)) + 1 : 1,
@@ -75,7 +132,7 @@ export default async function handler(req, res) {
       };
 
       feedbackStore.push(newFeedback);
-      await kv.set(FEEDBACK_KEY, feedbackStore);
+      await setFeedback(feedbackStore);
       
       return res.status(201).json(newFeedback);
     }
@@ -88,7 +145,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'ID is required' });
       }
 
-      let feedbackStore = await kv.get(FEEDBACK_KEY) || [];
+      let feedbackStore = await getFeedback();
       const index = feedbackStore.findIndex(item => item.id === parseInt(id));
       
       if (index === -1) {
@@ -96,7 +153,7 @@ export default async function handler(req, res) {
       }
 
       feedbackStore.splice(index, 1);
-      await kv.set(FEEDBACK_KEY, feedbackStore);
+      await setFeedback(feedbackStore);
       
       return res.status(200).json({ deleted: 1 });
     }
