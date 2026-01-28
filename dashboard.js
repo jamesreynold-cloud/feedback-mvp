@@ -1,7 +1,8 @@
-// Loads feedback.csv, analyzes sentiment, extracts themes, and updates dashboard
-async function fetchCSV() {
-  const response = await fetch('feedback.csv');
-  return response.text();
+// Loads feedback from database API
+async function fetchFeedback() {
+  const response = await fetch('http://localhost:3000/api/feedback');
+  const data = await response.json();
+  return data.data; // Returns array of feedback objects
 }
 
 function analyzeSentiment(text) {
@@ -76,11 +77,12 @@ function renderDashboard(feedbackArr) {
 
 window.addEventListener('DOMContentLoaded', async () => {
   try {
-    const csv = await fetchCSV();
-    const feedbackArr = csv.split(/\r?\n/).map(row => row.trim()).filter(row => row.length > 0);
+    const feedbackData = await fetchFeedback();
+    const feedbackArr = feedbackData.map(item => item.text);
     renderDashboard(feedbackArr);
   } catch (err) {
-    document.getElementById('sentiment-breakdown').textContent = 'Error loading feedback.';
+    console.error('Error loading feedback:', err);
+    document.getElementById('sentiment-breakdown').textContent = 'Error loading feedback. Make sure the server is running.';
     document.getElementById('theme-list').textContent = '';
     document.getElementById('feedback-list').textContent = '';
   }

@@ -71,7 +71,31 @@ function validateAndCleanFeedback(feedbackArr) {
 }
 
 
-document.getElementById('csv-upload-form').addEventListener('submit', function(e) {
+// Save feedback to database via API
+async function saveFeedbackToDB(feedbackArray) {
+  const results = { success: 0, failed: 0 };
+  for (const text of feedbackArray) {
+    const { sentiment, confidence } = analyzeSentiment(text);
+    try {
+      const response = await fetch('http://localhost:3000/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, sentiment, confidence })
+      });
+      if (response.ok) {
+        results.success++;
+      } else {
+        results.failed++;
+      }
+    } catch (err) {
+      console.error('Error saving feedback:', err);
+      results.failed++;
+    }
+  }
+  return results;
+}
+
+document.getElementById('csv-upload-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   const fileInput = document.getElementById('csvFile');
   const resultsDiv = document.getElementById('validation-results');
@@ -80,29 +104,54 @@ document.getElementById('csv-upload-form').addEventListener('submit', function(e
     return;
   }
   const reader = new FileReader();
-  reader.onload = function(event) {
+  reader.onload = async function(event) {
     const rows = parseCSV(event.target.result);
     const { unique, duplicates } = validateAndCleanFeedback(rows);
-    // Sentiment analysis
+    
+    // Save to database
+    resultsDiv.innerHTML = '<b>Saving to database...</b>';
+    const saveResults = await saveFeedbackToDB(unique);
+    
+    // Sentiment analysis display
     const sentimentResults = unique.map(text => {
       const { sentiment, confidence } = analyzeSentiment(text);
       return `<li>${text}<br><b>Sentiment:</b> ${sentiment} <b>Confidence:</b> ${confidence}</li>`;
     }).join('');
-    resultsDiv.innerHTML = `<b>Valid, cleaned feedback entries:</b> ${unique.length}<br><b>Duplicates removed:</b> ${duplicates.length}<br><ul>${sentimentResults}</ul>`;
+    
+    resultsDiv.innerHTML = `
+      <b>Saved to database:</b> ${saveResults.success} entries<br>
+      <b>Failed:</b> ${saveResults.failed}<br>
+      <b>Valid, cleaned feedback entries:</b> ${unique.length}<br>
+      <b>Duplicates removed:</b> ${duplicates.length}<br>
+      <ul>${sentimentResults}</ul>
+    `;
   };
   reader.readAsText(fileInput.files[0]);
 });
 
-document.getElementById('text-upload-form').addEventListener('submit', function(e) {
+document.getElementById('text-upload-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   const textInput = document.getElementById('textInput').value;
   const rows = parseCSV(textInput);
   const { unique, duplicates } = validateAndCleanFeedback(rows);
-  // Sentiment analysis
+  
+  const resultsDiv = document.getElementById('validation-results');
+  
+  // Save to database
+  resultsDiv.innerHTML = '<b>Saving to database...</b>';
+  const saveResults = await saveFeedbackToDB(unique);
+  
+  // Sentiment analysis display
   const sentimentResults = unique.map(text => {
     const { sentiment, confidence } = analyzeSentiment(text);
     return `<li>${text}<br><b>Sentiment:</b> ${sentiment} <b>Confidence:</b> ${confidence}</li>`;
   }).join('');
-  const resultsDiv = document.getElementById('validation-results');
-  resultsDiv.innerHTML = `<b>Valid, cleaned feedback entries:</b> ${unique.length}<br><b>Duplicates removed:</b> ${duplicates.length}<br><ul>${sentimentResults}</ul>`;
+  
+  resultsDiv.innerHTML = `
+    <b>Saved to database:</b> ${saveResults.success} entries<br>
+    <b>Failed:</b> ${saveResults.failed}<br>
+    <b>Valid, cleaned feedback entries:</b> ${unique.length}<br>
+    <b>Duplicates removed:</b> ${duplicates.length}<br>
+    <ul>${sentimentResults}</ul>
+  `;
 });
