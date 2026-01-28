@@ -1,6 +1,10 @@
 // Loads feedback from database API
 async function fetchFeedback() {
-  const response = await fetch('http://localhost:3000/api/feedback');
+  const apiUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api/feedback'
+    : '/api/feedback';
+    
+  const response = await fetch(apiUrl);
   const data = await response.json();
   return data.data; // Returns array of feedback objects
 }

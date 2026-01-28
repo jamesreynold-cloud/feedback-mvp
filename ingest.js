@@ -74,10 +74,14 @@ function validateAndCleanFeedback(feedbackArr) {
 // Save feedback to database via API
 async function saveFeedbackToDB(feedbackArray) {
   const results = { success: 0, failed: 0 };
+  const apiUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api/feedback'
+    : '/api/feedback';
+    
   for (const text of feedbackArray) {
     const { sentiment, confidence } = analyzeSentiment(text);
     try {
-      const response = await fetch('http://localhost:3000/api/feedback', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, sentiment, confidence })
