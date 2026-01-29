@@ -59,11 +59,14 @@ function extractThemes(feedbackArr) {
 
 function renderDashboard(feedbackArr) {
   const sentiments = { positive: 0, negative: 0, neutral: 0 };
+  
+  // feedbackArr contains text strings
   feedbackArr.forEach(text => {
     const sentiment = analyzeSentiment(text);
     sentiments[sentiment]++;
   });
-  const total = feedbackArr.length;
+  
+  const total = feedbackArr.length || 1;
   document.getElementById('sentiment-breakdown').innerHTML =
     `<b>Positive:</b> ${sentiments.positive} (${((sentiments.positive/total)*100).toFixed(1)}%)<br>` +
     `<b>Negative:</b> ${sentiments.negative} (${((sentiments.negative/total)*100).toFixed(1)}%)<br>` +
@@ -76,17 +79,25 @@ function renderDashboard(feedbackArr) {
     ).join('');
 
   document.getElementById('feedback-list').innerHTML =
-    feedbackArr.map(text => `<li>${text}</li>`).join('');
+    feedbackArr.length > 0 
+      ? feedbackArr.map(text => `<li>${text}</li>`).join('')
+      : '<li>No feedback available</li>';
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
   try {
     const feedbackData = await fetchFeedback();
+    if (!feedbackData || feedbackData.length === 0) {
+      document.getElementById('sentiment-breakdown').innerHTML = 'No feedback data available. <a href="ingest.html">Upload feedback</a>';
+      document.getElementById('theme-list').innerHTML = '';
+      document.getElementById('feedback-list').innerHTML = '';
+      return;
+    }
     const feedbackArr = feedbackData.map(item => item.text);
     renderDashboard(feedbackArr);
   } catch (err) {
     console.error('Error loading feedback:', err);
-    document.getElementById('sentiment-breakdown').textContent = 'Error loading feedback. Make sure the server is running.';
+    document.getElementById('sentiment-breakdown').textContent = 'Error loading feedback. Make sure the API is working.';
     document.getElementById('theme-list').textContent = '';
     document.getElementById('feedback-list').textContent = '';
   }
