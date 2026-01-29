@@ -1,6 +1,8 @@
 // Vercel Serverless Function for feedback API
 // Uses Upstash Redis for persistent storage (with in-memory fallback)
 
+import { Redis } from '@upstash/redis';
+
 let redisClient = null;
 let feedbackStore = null;
 
@@ -23,16 +25,17 @@ function initRedis() {
   if (redisClient) return;
   
   try {
-    const { Redis } = require('@upstash/redis');
     if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
       redisClient = new Redis({
         url: process.env.UPSTASH_REDIS_REST_URL,
         token: process.env.UPSTASH_REDIS_REST_TOKEN,
       });
       console.log('Redis client initialized');
+    } else {
+      console.log('Redis env vars not found, using fallback storage');
     }
   } catch (err) {
-    console.log('Redis not available, using fallback storage');
+    console.log('Redis initialization error, using fallback storage:', err.message);
   }
 }
 
