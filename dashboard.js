@@ -1,3 +1,6 @@
+// Dashboard Script - Feedback Analysis MVP
+console.log('Dashboard.js loaded!');
+
 // Loads feedback from database API
 async function fetchFeedback() {
   const apiUrl = window.location.hostname === 'localhost' 
