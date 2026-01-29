@@ -1,24 +1,11 @@
-// Vercel Serverless Function for feedback API with Vercel KV storage
-// Falls back to in-memory storage if KV is not configured
+// Vercel Serverless Function for feedback API
+// Uses in-memory storage (works without database setup)
+// Data persists during deployment but resets on new deployments
 
-let kvAvailable = false;
-let kv = null;
+// In-memory storage
+let feedbackStore = null;
 
-// Try to import KV, but handle if not configured
-try {
-  const kvModule = await import('@vercel/kv');
-  kv = kvModule.kv;
-  kvAvailable = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
-} catch (err) {
-  console.log('KV not available, using fallback storage');
-}
-
-const FEEDBACK_KEY = 'feedback:all';
-
-// In-memory fallback storage (resets on deployment)
-let memoryStore = null;
-
-// Initialize with sample data if empty
+// Initialize with sample data
 const initialData = [
   'Great product, very satisfied!',
   'The checkout process was confusing.',
@@ -32,31 +19,9 @@ const initialData = [
   'Wish there were more size options.'
 ];
 
-async function initializeData() {
-  if (kvAvailable) {
-    try {
-      const existing = await kv.get(FEEDBACK_KEY);
-      if (!existing || existing.length === 0) {
-        const feedbackStore = initialData.map((text, index) => ({
-          id: index + 1,
-          text,
-          sentiment: null,
-          confidence: null,
-          created_at: new Date().toISOString()
-        }));
-        await kv.set(FEEDBACK_KEY, feedbackStore);
-        return feedbackStore;
-      }
-      return existing;
-    } catch (err) {
-      console.error('KV error, using fallback:', err);
-      kvAvailable = false;
-    }
-  }
-  
-  // Fallback to in-memory storage
-  if (!memoryStore) {
-    memoryStore = initialData.map((text, index) => ({
+function initializeData() {
+  if (!feedbackStore) {
+    feedbackStore = initialData.map((text, index) => ({
       id: index + 1,
       text,
       sentiment: null,
@@ -64,33 +29,10 @@ async function initializeData() {
       created_at: new Date().toISOString()
     }));
   }
-  return memoryStore;
+  return feedbackStore;
 }
 
-async function getFeedback() {
-  if (kvAvailable) {
-    try {
-      return await kv.get(FEEDBACK_KEY) || [];
-    } catch (err) {
-      kvAvailable = false;
-    }
-  }
-  return memoryStore || [];
-}
-
-async function setFeedback(data) {
-  if (kvAvailable) {
-    try {
-      await kv.set(FEEDBACK_KEY, data);
-      return;
-    } catch (err) {
-      kvAvailable = false;
-    }
-  }
-  memoryStore = data;
-}
-
-export default async function handler(req, res) {
+export default function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -109,8 +51,8 @@ export default async function handler(req, res) {
   try {
     // GET all feedback
     if (req.method === 'GET') {
-      const feedbackStore = await initializeData();
-      return res.status(200).json({ data: feedbackStore });
+      const data = initializeData();
+      return res.status(200).json({ data });
     }
 
     // POST new feedback
@@ -121,7 +63,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Feedback text is required' });
       }
 
-      let feedbackStore = await getFeedback();
+      initializeData();
       
       const newFeedback = {
         id: feedbackStore.length > 0 ? Math.max(...feedbackStore.map(f => f.id)) + 1 : 1,
@@ -132,7 +74,6 @@ export default async function handler(req, res) {
       };
 
       feedbackStore.push(newFeedback);
-      await setFeedback(feedbackStore);
       
       return res.status(201).json(newFeedback);
     }
@@ -145,7 +86,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'ID is required' });
       }
 
-      let feedbackStore = await getFeedback();
+      initializeData();
       const index = feedbackStore.findIndex(item => item.id === parseInt(id));
       
       if (index === -1) {
@@ -153,7 +94,6 @@ export default async function handler(req, res) {
       }
 
       feedbackStore.splice(index, 1);
-      await setFeedback(feedbackStore);
       
       return res.status(200).json({ deleted: 1 });
     }
