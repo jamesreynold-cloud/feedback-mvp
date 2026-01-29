@@ -6,20 +6,6 @@ import { Redis } from '@upstash/redis';
 let redisClient = null;
 let feedbackStore = null;
 
-// Initialize with sample data
-const initialData = [
-  'Great product, very satisfied!',
-  'The checkout process was confusing.',
-  'Loved the fast shipping 🚚',
-  'Customer support was unhelpful.',
-  'Amazing quality, will buy again.',
-  'Too expensive for the value.',
-  'Easy to use website.',
-  'Received a damaged item.',
-  'The colors are vibrant and true to photos.',
-  'Wish there were more size options.'
-];
-
 // Try to import Redis client
 function initRedis() {
   if (redisClient) return;
@@ -41,13 +27,7 @@ function initRedis() {
 
 function initializeData() {
   if (!feedbackStore) {
-    feedbackStore = initialData.map((text, index) => ({
-      id: index + 1,
-      text,
-      sentiment: null,
-      confidence: null,
-      created_at: new Date().toISOString()
-    }));
+    feedbackStore = []; // Start with empty array instead of sample data
   }
   return feedbackStore;
 }
@@ -101,12 +81,13 @@ export default async function handler(req, res) {
         data = await getFeedbackFromRedis();
       }
       
-      // Fallback to in-memory
+      // Fallback to in-memory, or empty array if no data
       if (!data) {
         data = initializeData();
       }
       
-      return res.status(200).json({ data });
+      // Return empty array if data is null or undefined
+      return res.status(200).json({ data: data || [] });
     }
 
     // POST new feedback
