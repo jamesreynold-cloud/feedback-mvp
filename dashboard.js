@@ -3,10 +3,30 @@ async function fetchFeedback() {
   const apiUrl = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api/feedback'
     : '/api/feedback';
+  
+  console.log('Fetching from:', apiUrl);
+  
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     
-  const response = await fetch(apiUrl);
-  const data = await response.json();
-  return data.data; // Returns array of feedback objects
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Fetched data:', data);
+    return data.data; // Returns array of feedback objects
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
 }
 
 function analyzeSentiment(text) {
@@ -85,8 +105,12 @@ function renderDashboard(feedbackArr) {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
+  console.log('Dashboard loaded, fetching feedback...');
+  
   try {
     const feedbackData = await fetchFeedback();
+    console.log('Got feedback data:', feedbackData);
+    
     if (!feedbackData || feedbackData.length === 0) {
       document.getElementById('sentiment-breakdown').innerHTML = 'No feedback data available. <a href="ingest.html">Upload feedback</a>';
       document.getElementById('theme-list').innerHTML = '';
@@ -94,10 +118,13 @@ window.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     const feedbackArr = feedbackData.map(item => item.text);
+    console.log('Processing feedback:', feedbackArr);
     renderDashboard(feedbackArr);
+    console.log('Dashboard rendered successfully');
   } catch (err) {
     console.error('Error loading feedback:', err);
-    document.getElementById('sentiment-breakdown').textContent = 'Error loading feedback. Make sure the API is working.';
+    const errorMsg = `Error: ${err.message}`;
+    document.getElementById('sentiment-breakdown').textContent = errorMsg;
     document.getElementById('theme-list').textContent = '';
     document.getElementById('feedback-list').textContent = '';
   }
