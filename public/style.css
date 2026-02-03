@@ -142,6 +142,11 @@ body {
   background: #fafbfc;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  border-style: dashed;
 }
 
 .file-input-display:hover {
