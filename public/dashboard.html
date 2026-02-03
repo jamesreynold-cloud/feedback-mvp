@@ -3,29 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Insights Dashboard - Feedback Analysis MVP</title>
+  <title>Feedback Summary - Feedback Analysis</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <header>
-    <h1>Feedback Analysis MVP</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="ingest.html">Data Ingestion</a>
-      <a href="dashboard.html">Insights Dashboard</a>
-    </nav>
-  </header>
-  <main>
-    <h2>Insights Dashboard</h2>
-    <section id="insights-summary">
-      <h3>Sentiment Overview</h3>
-      <div id="sentiment-breakdown">Loading...</div>
-      <h3>Key Themes</h3>
-      <div id="theme-list">Loading...</div>
-      <h3>All Feedback</h3>
-      <ul id="feedback-list">Loading...</ul>
-    </section>
-    <script src="dashboard.js"></script>
-  </main>
+<body class="dashboard-page">
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div class="header-content">
+        <h1>Feedback summary</h1>
+        <a href="ingest.html" class="btn-upload">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload more
+        </a>
+      </div>
+    </header>
+
+    <main class="dashboard-content">
+      <!-- Primary Insight Card -->
+      <section class="primary-insight-card">
+        <div class="insight-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h2 id="primary-insight-title">Loading top concern...</h2>
+        <p id="primary-insight-evidence" class="insight-evidence">Analyzing feedback data...</p>
+      </section>
+
+      <!-- Sentiment Breakdown Card -->
+      <section class="sentiment-card">
+        <h3>Sentiment breakdown</h3>
+        <div id="sentiment-breakdown" class="sentiment-grid">
+          <div class="sentiment-item">
+            <div class="sentiment-icon positive">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </div>
+            <div class="sentiment-details">
+              <span class="sentiment-label">Positive</span>
+              <span id="positive-count" class="sentiment-count">0</span>
+            </div>
+          </div>
+          <div class="sentiment-item">
+            <div class="sentiment-icon neutral">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="8" y1="15" x2="16" y2="15"></line>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </div>
+            <div class="sentiment-details">
+              <span class="sentiment-label">Neutral</span>
+              <span id="neutral-count" class="sentiment-count">0</span>
+            </div>
+          </div>
+          <div class="sentiment-item">
+            <div class="sentiment-icon negative">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M16 16s-1.5-2-4-2-4 2-4 2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </div>
+            <div class="sentiment-details">
+              <span class="sentiment-label">Negative</span>
+              <span id="negative-count" class="sentiment-count">0</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Themes Section -->
+      <section class="themes-section">
+        <h3>Key themes</h3>
+        <div id="theme-list" class="theme-tags">Loading...</div>
+      </section>
+
+      <!-- Individual Comments Section -->
+      <section class="comments-section">
+        <h3>Individual comments</h3>
+        <div id="feedback-list" class="feedback-grid">Loading...</div>
+      </section>
+    </main>
+  </div>
+  <script src="dashboard.js"></script>
 </body>
 </html>

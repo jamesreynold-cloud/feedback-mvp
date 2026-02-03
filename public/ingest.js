@@ -103,32 +103,35 @@ document.getElementById('csv-upload-form').addEventListener('submit', async func
   e.preventDefault();
   const fileInput = document.getElementById('csvFile');
   const resultsDiv = document.getElementById('validation-results');
+  
   if (!fileInput.files.length) {
-    resultsDiv.textContent = 'Please select a CSV file.';
+    resultsDiv.className = 'validation-results error';
+    resultsDiv.textContent = 'Please select a file first.';
     return;
   }
+  
   const reader = new FileReader();
   reader.onload = async function(event) {
     const rows = parseCSV(event.target.result);
     const { unique, duplicates } = validateAndCleanFeedback(rows);
     
     // Save to database
+    resultsDiv.className = 'validation-results';
     resultsDiv.innerHTML = '<b>Saving to database...</b>';
     const saveResults = await saveFeedbackToDB(unique);
     
-    // Sentiment analysis display
-    const sentimentResults = unique.map(text => {
-      const { sentiment, confidence } = analyzeSentiment(text);
-      return `<li>${text}<br><b>Sentiment:</b> ${sentiment} <b>Confidence:</b> ${confidence}</li>`;
-    }).join('');
-    
-    resultsDiv.innerHTML = `
-      <b>Saved to database:</b> ${saveResults.success} entries<br>
-      <b>Failed:</b> ${saveResults.failed}<br>
-      <b>Valid, cleaned feedback entries:</b> ${unique.length}<br>
-      <b>Duplicates removed:</b> ${duplicates.length}<br>
-      <ul>${sentimentResults}</ul>
-    `;
+    // Success message
+    if (saveResults.success > 0) {
+      resultsDiv.className = 'validation-results success';
+      resultsDiv.innerHTML = `
+        ✓ Successfully uploaded ${saveResults.success} feedback entries!<br>
+        ${duplicates.length > 0 ? `Removed ${duplicates.length} duplicates.` : ''}
+        <br><br><a href="dashboard.html" style="color: #065f46; font-weight: 600;">View dashboard →</a>
+      `;
+    } else {
+      resultsDiv.className = 'validation-results error';
+      resultsDiv.textContent = 'Failed to upload feedback. Please try again.';
+    }
   };
   reader.readAsText(fileInput.files[0]);
 });
@@ -136,26 +139,41 @@ document.getElementById('csv-upload-form').addEventListener('submit', async func
 document.getElementById('text-upload-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   const textInput = document.getElementById('textInput').value;
+  
+  if (!textInput.trim()) {
+    const resultsDiv = document.getElementById('validation-results');
+    resultsDiv.className = 'validation-results error';
+    resultsDiv.textContent = 'Please enter some feedback text.';
+    return;
+  }
+  
   const rows = parseCSV(textInput);
   const { unique, duplicates } = validateAndCleanFeedback(rows);
   
   const resultsDiv = document.getElementById('validation-results');
   
   // Save to database
+  resultsDiv.className = 'validation-results';
   resultsDiv.innerHTML = '<b>Saving to database...</b>';
   const saveResults = await saveFeedbackToDB(unique);
   
-  // Sentiment analysis display
-  const sentimentResults = unique.map(text => {
-    const { sentiment, confidence } = analyzeSentiment(text);
-    return `<li>${text}<br><b>Sentiment:</b> ${sentiment} <b>Confidence:</b> ${confidence}</li>`;
-  }).join('');
-  
-  resultsDiv.innerHTML = `
-    <b>Saved to database:</b> ${saveResults.success} entries<br>
-    <b>Failed:</b> ${saveResults.failed}<br>
-    <b>Valid, cleaned feedback entries:</b> ${unique.length}<br>
-    <b>Duplicates removed:</b> ${duplicates.length}<br>
-    <ul>${sentimentResults}</ul>
-  `;
+  // Success message
+  if (saveResults.success > 0) {
+    resultsDiv.className = 'validation-results success';
+    resultsDiv.innerHTML = `
+      ✓ Successfully uploaded ${saveResults.success} feedback entries!<br>
+      ${duplicates.length > 0 ? `Removed ${duplicates.length} duplicates.` : ''}
+      <br><br><a href="dashboard.html" style="color: #065f46; font-weight: 600;">View dashboard →</a>
+    `;
+    document.getElementById('textInput').value = '';
+  } else {
+    resultsDiv.className = 'validation-results error';
+    resultsDiv.textContent = 'Failed to upload feedback. Please try again.';
+  }
+});
+
+// Update file input display when file is selected
+document.getElementById('csvFile').addEventListener('change', function(e) {
+  const fileName = e.target.files[0]?.name || 'Choose a file...';
+  document.querySelector('.file-name').textContent = fileName;
 });

@@ -3,33 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Ingestion - Feedback Analysis MVP</title>
+  <title>Upload Feedback - Feedback Analysis</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <header>
-    <h1>Feedback Analysis MVP</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="ingest.html">Data Ingestion</a>
-      <a href="dashboard.html">Insights Dashboard</a>
-    </nav>
-  </header>
-  <main>
-    <h2>Upload Feedback Data</h2>
-    <form id="csv-upload-form">
-      <label for="csvFile">Upload CSV file:</label>
-      <input type="file" id="csvFile" accept=".csv">
-      <input type="submit" value="Upload CSV">
-    </form>
-    <hr>
-    <form id="text-upload-form">
-      <label for="textInput">Paste feedback (one per line):</label>
-      <textarea id="textInput" rows="8" placeholder="Enter feedback here..."></textarea>
-      <input type="submit" value="Submit Text">
-    </form>
-    <div id="validation-results"></div>
-  </main>
+<body class="upload-page">
+  <div class="page-container">
+    <div class="upload-card">
+      <div class="card-header">
+        <div class="upload-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <h1>Upload your feedback</h1>
+        <p class="subtitle">Upload your customer feedback file and we'll analyze sentiment and key themes for you</p>
+      </div>
+
+      <form id="csv-upload-form" class="upload-form">
+        <div class="form-group">
+          <label for="csvFile" class="input-label">Feedback file</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="csvFile" accept=".csv,.txt" class="file-input">
+            <div class="file-input-display">
+              <svg class="file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+              </svg>
+              <span class="file-name">Choose a file...</span>
+            </div>
+          </div>
+          <p class="helper-text">CSV or TXT files supported</p>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span>Upload file</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </form>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <form id="text-upload-form" class="text-form">
+        <div class="form-group">
+          <label for="textInput" class="input-label">Paste feedback directly</label>
+          <textarea id="textInput" rows="6" placeholder="Enter feedback, one per line...
+Example:
+Great product, very satisfied!
+The checkout process was confusing."></textarea>
+        </div>
+        <button type="submit" class="btn-secondary">Submit text</button>
+      </form>
+
+      <div id="validation-results" class="validation-results"></div>
+
+      <div class="card-footer">
+        <a href="dashboard.html" class="link-secondary">View insights dashboard →</a>
+      </div>
+    </div>
+  </div>
   <script src="ingest.js"></script>
 </body>
 </html>
