@@ -408,6 +408,11 @@ textarea::placeholder {
   z-index: 1;
 }
 
+.insight-emoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
 .primary-insight-card h2 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -468,6 +473,11 @@ textarea::placeholder {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.sentiment-emoji {
+  font-size: 1.4rem;
+  line-height: 1;
 }
 
 .sentiment-icon.positive {
