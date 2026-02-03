@@ -173,7 +173,24 @@ document.getElementById('text-upload-form').addEventListener('submit', async fun
 });
 
 // Update file input display when file is selected
-document.getElementById('csvFile').addEventListener('change', function(e) {
+const csvFileInput = document.getElementById('csvFile');
+const fileNameLabel = document.querySelector('.file-name');
+const fileInputDisplay = document.querySelector('.file-input-display');
+
+csvFileInput.addEventListener('change', function(e) {
   const fileName = e.target.files[0]?.name || 'Choose a file...';
-  document.querySelector('.file-name').textContent = fileName;
+  fileNameLabel.textContent = fileName;
 });
+
+if (fileInputDisplay) {
+  fileInputDisplay.addEventListener('click', () => {
+    csvFileInput.click();
+  });
+
+  fileInputDisplay.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      csvFileInput.click();
+    }
+  });
+}

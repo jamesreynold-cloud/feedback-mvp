@@ -149,6 +149,11 @@ body {
   background: #f0f1ff;
 }
 
+.file-input-display:focus-visible {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
 .file-input:focus + .file-input-display {
   outline: 2px solid #667eea;
   outline-offset: 2px;
@@ -679,8 +684,9 @@ textarea::placeholder {
 
 /* Accessibility: Focus States */
 *:focus-visible {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
+  outline: 3px solid #4f46e5;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
 }
 
 /* Ensure sufficient contrast */
