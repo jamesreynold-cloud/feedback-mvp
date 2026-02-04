@@ -4,7 +4,6 @@
 import { Redis } from '@upstash/redis';
 
 let redisClient = null;
-let feedbackStore = null;
 
 // Try to import Redis client
 function initRedis() {
@@ -23,13 +22,6 @@ function initRedis() {
   } catch (err) {
     console.log('Redis initialization error, using fallback storage:', err.message);
   }
-}
-
-function initializeData() {
-  if (!feedbackStore) {
-    feedbackStore = []; // Start with empty array instead of sample data
-  }
-  return feedbackStore;
 }
 
 async function getFeedbackFromRedis() {
@@ -74,19 +66,14 @@ export default async function handler(req, res) {
   try {
     // GET all feedback
     if (req.method === 'GET') {
-      let data;
+      let data = null;
       
       // Try Redis first
       if (redisClient) {
         data = await getFeedbackFromRedis();
       }
       
-      // Fallback to in-memory, or empty array if no data
-      if (!data) {
-        data = initializeData();
-      }
-      
-      // Return empty array if data is null or undefined
+      // Return data or empty array if no data
       return res.status(200).json({ data: data || [] });
     }
 
@@ -98,16 +85,14 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Feedback text is required' });
       }
 
-      let feedbackData;
+      let feedbackData = [];
       
       // Try to get from Redis
       if (redisClient) {
-        feedbackData = await getFeedbackFromRedis();
-      }
-      
-      // Fallback to in-memory
-      if (!feedbackData) {
-        feedbackData = initializeData();
+        const existingData = await getFeedbackFromRedis();
+        if (existingData) {
+          feedbackData = existingData;
+        }
       }
 
       const newFeedback = {
@@ -119,7 +104,6 @@ export default async function handler(req, res) {
       };
 
       feedbackData.push(newFeedback);
-      feedbackStore = feedbackData; // Update in-memory
       
       // Try to save to Redis
       if (redisClient) {
@@ -137,16 +121,14 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'ID is required' });
       }
 
-      let feedbackData;
+      let feedbackData = [];
       
       // Try to get from Redis
       if (redisClient) {
-        feedbackData = await getFeedbackFromRedis();
-      }
-      
-      // Fallback to in-memory
-      if (!feedbackData) {
-        feedbackData = initializeData();
+        const existingData = await getFeedbackFromRedis();
+        if (existingData) {
+          feedbackData = existingData;
+        }
       }
 
       const index = feedbackData.findIndex(item => item.id === parseInt(id));
@@ -156,7 +138,6 @@ export default async function handler(req, res) {
       }
 
       feedbackData.splice(index, 1);
-      feedbackStore = feedbackData; // Update in-memory
       
       // Try to save to Redis
       if (redisClient) {
