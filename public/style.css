@@ -437,6 +437,83 @@ textarea::placeholder {
   opacity: 0.95;
   position: relative;
   z-index: 1;
+  margin-bottom: 1.5rem;
+}
+
+.insight-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-copy-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-copy-summary:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-copy-summary:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Validation Summary Card */
+.validation-summary-card {
+  background: var(--color-surface);
+  padding: 1.5rem 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid #10b981;
+}
+
+.validation-summary-card h3 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.validation-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
 }
 
 /* Sentiment Card */
@@ -567,12 +644,59 @@ textarea::placeholder {
   font-weight: 700;
 }
 
-/* Comments Section */
+/* Comments Section - Progressive Disclosure */
 .comments-section {
   background: var(--color-surface);
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+}
+
+.comments-disclosure {
+  outline: none;
+}
+
+.comments-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  padding: 0.5rem 0;
+  transition: all 0.2s ease;
+}
+
+.comments-summary::-webkit-details-marker {
+  display: none;
+}
+
+.comments-summary:hover {
+  color: #667eea;
+}
+
+.comments-summary:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.comments-summary h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.disclosure-icon {
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.comments-disclosure[open] .disclosure-icon {
+  transform: rotate(180deg);
 }
 
 .comments-section h3 {
@@ -587,6 +711,7 @@ textarea::placeholder {
 .feedback-grid {
   display: grid;
   gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 .feedback-item {

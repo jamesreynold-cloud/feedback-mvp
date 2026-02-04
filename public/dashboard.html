@@ -23,13 +23,41 @@
     </header>
 
     <main class="dashboard-content">
-      <!-- Primary Insight Card -->
-      <section class="primary-insight-card">
+      <!-- Primary Summary / Top Insight -->
+      <section class="primary-insight-card" role="region" aria-labelledby="primary-insight-title">
         <div class="insight-icon" aria-hidden="true">
           <span class="insight-emoji">⭐</span>
         </div>
-        <h2 id="primary-insight-title">Loading top concern...</h2>
+        <h2 id="primary-insight-title">Loading insights...</h2>
         <p id="primary-insight-evidence" class="insight-evidence">Analyzing feedback data...</p>
+        <div class="insight-actions">
+          <button id="copy-summary-btn" class="btn-copy-summary" aria-label="Copy summary to clipboard">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy summary
+          </button>
+        </div>
+      </section>
+
+      <!-- Data Validation Summary (when present) -->
+      <section id="validation-summary" class="validation-summary-card" style="display: none;">
+        <h3>Data processed</h3>
+        <div class="validation-stats">
+          <div class="stat-item">
+            <span class="stat-value" id="total-uploaded">0</span>
+            <span class="stat-label">Total uploaded</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="entries-removed">0</span>
+            <span class="stat-label">Filtered out</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="valid-analyzed">0</span>
+            <span class="stat-label">Valid & analyzed</span>
+          </div>
+        </div>
       </section>
 
       <!-- Sentiment Breakdown Card -->
@@ -72,10 +100,17 @@
         <div id="theme-list" class="theme-tags">Loading...</div>
       </section>
 
-      <!-- Individual Comments Section -->
+      <!-- Individual Comments Section (Progressive Disclosure) -->
       <section class="comments-section">
-        <h3>Individual comments</h3>
-        <div id="feedback-list" class="feedback-grid">Loading...</div>
+        <details class="comments-disclosure" open>
+          <summary class="comments-summary">
+            <h3>View individual comments</h3>
+            <svg class="disclosure-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div id="feedback-list" class="feedback-grid">Loading...</div>
+        </details>
       </section>
     </main>
   </div>

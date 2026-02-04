@@ -115,14 +115,14 @@ function renderDashboard(feedbackArr) {
     const [topTheme, topCount] = sortedThemes[0];
     const percentage = ((topCount / total) * 100).toFixed(0);
     document.getElementById('primary-insight-title').textContent = 
-      `${topTheme} is the top theme`;
+      `${topTheme} appears to be the most common theme`;
     document.getElementById('primary-insight-evidence').textContent = 
-      `Mentioned in ${percentage}% of feedback (${topCount} of ${total} comments)`;
+      `We found this in ${percentage}% of feedback (${topCount} out of ${total} comments)`;
   } else {
     document.getElementById('primary-insight-title').textContent = 
-      'No clear themes detected yet';
+      'No clear themes identified yet';
     document.getElementById('primary-insight-evidence').textContent = 
-      'Upload more feedback to see insights';
+      'Upload more feedback to discover insights';
   }
   
   // Render themes as tags
@@ -148,8 +148,42 @@ function renderDashboard(feedbackArr) {
       : '<p style="color: var(--color-text-muted); padding: 2rem; text-align: center;">No feedback available. <a href="ingest.html" style="color: #667eea;">Upload feedback</a></p>';
 }
 
+// Copy summary functionality
+function setupCopySummary() {
+  const copyBtn = document.getElementById('copy-summary-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const title = document.getElementById('primary-insight-title').textContent;
+      const evidence = document.getElementById('primary-insight-evidence').textContent;
+      const summary = `${title}\n${evidence}`;
+      
+      try {
+        await navigator.clipboard.writeText(summary);
+        copyBtn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Copied!
+        `;
+        setTimeout(() => {
+          copyBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy summary
+          `;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    });
+  }
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   console.log('Dashboard loaded, fetching feedback...');
+  setupCopySummary();
   
   try {
     const feedbackData = await fetchFeedback();
@@ -157,7 +191,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     if (!feedbackData || feedbackData.length === 0) {
       document.getElementById('primary-insight-title').textContent = 'No feedback data yet';
-      document.getElementById('primary-insight-evidence').textContent = 'Upload your first feedback to see insights';
+      document.getElementById('primary-insight-evidence').textContent = 'Upload your first feedback to discover insights';
       document.getElementById('positive-count').textContent = '0';
       document.getElementById('neutral-count').textContent = '0';
       document.getElementById('negative-count').textContent = '0';
@@ -172,7 +206,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Error loading feedback:', err);
     const errorMsg = `Error: ${err.message}`;
-    document.getElementById('primary-insight-title').textContent = 'Error loading data';
+    document.getElementById('primary-insight-title').textContent = 'Unable to load data';
     document.getElementById('primary-insight-evidence').textContent = errorMsg;
   }
 });
