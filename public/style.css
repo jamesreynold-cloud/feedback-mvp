@@ -228,6 +228,14 @@ textarea::placeholder {
   transform: translateY(0);
 }
 
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .btn-primary:focus {
   outline: 2px solid #667eea;
   outline-offset: 2px;

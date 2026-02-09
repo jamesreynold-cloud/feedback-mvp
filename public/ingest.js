@@ -99,38 +99,83 @@ async function saveFeedbackToDB(feedbackArray) {
   return results;
 }
 
+const csvSubmitBtn = document.getElementById('csv-submit-btn');
+const textSubmitBtn = document.getElementById('text-submit-btn');
+let isCsvSubmitting = false;
+let isTextSubmitting = false;
+
+function setSubmittingState(type, isSubmitting) {
+  if (type === 'csv') {
+    isCsvSubmitting = isSubmitting;
+    csvSubmitBtn.disabled = isSubmitting;
+    csvSubmitBtn.innerHTML = isSubmitting
+      ? 'Submitting...'
+      : '<span>Upload file</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  } else if (type === 'text') {
+    isTextSubmitting = isSubmitting;
+    textSubmitBtn.disabled = isSubmitting;
+    textSubmitBtn.textContent = isSubmitting ? 'Submitting...' : 'Submit text';
+  }
+}
+
+function showStatusMessage(message, statusClass) {
+  const resultsDiv = document.getElementById('validation-results');
+  resultsDiv.className = `validation-results ${statusClass}`;
+  resultsDiv.innerHTML = message;
+}
+
 document.getElementById('csv-upload-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   const fileInput = document.getElementById('csvFile');
   const resultsDiv = document.getElementById('validation-results');
   
+  if (isCsvSubmitting) return;
+  
   if (!fileInput.files.length) {
-    resultsDiv.className = 'validation-results error';
-    resultsDiv.textContent = 'Please select a file first.';
+    showStatusMessage('Please select a file first.', 'error');
     return;
   }
   
   const reader = new FileReader();
   reader.onload = async function(event) {
-    const rows = parseCSV(event.target.result);
-    const { unique, duplicates } = validateAndCleanFeedback(rows);
-    
-    // Save to database
-    resultsDiv.className = 'validation-results';
-    resultsDiv.innerHTML = '<b>Saving to database...</b>';
-    const saveResults = await saveFeedbackToDB(unique);
-    
-    // Success message
-    if (saveResults.success > 0) {
-      resultsDiv.className = 'validation-results success';
-      resultsDiv.innerHTML = `
-        ✓ Successfully uploaded ${saveResults.success} feedback entries!<br>
-        ${duplicates.length > 0 ? `Removed ${duplicates.length} duplicates.` : ''}
-        <br><br><a href="dashboard.html" style="color: #065f46; font-weight: 600;">View dashboard →</a>
-      `;
-    } else {
-      resultsDiv.className = 'validation-results error';
-      resultsDiv.textContent = 'Failed to upload feedback. Please try again.';
+    try {
+      setSubmittingState('csv', true);
+      const rows = parseCSV(event.target.result);
+      const { unique } = validateAndCleanFeedback(rows);
+      
+      showStatusMessage('<b>Submitting...</b>', '');
+      const saveResults = await saveFeedbackToDB(unique);
+      
+      if (saveResults.success > 0 && saveResults.failed === 0) {
+        showStatusMessage(
+          `
+            ✓ Feedback saved.<br>
+            Total uploaded: ${rows.length}<br>
+            Removed: ${rows.length - unique.length}<br>
+            Valid analyzed: ${unique.length}<br>
+            <br><a href="dashboard.html" style="color: #065f46; font-weight: 600;">View dashboard →</a>
+          `,
+          'success'
+        );
+      } else if (saveResults.success > 0) {
+        showStatusMessage(
+          `
+            ✓ Feedback saved with some errors.<br>
+            Total uploaded: ${rows.length}<br>
+            Removed: ${rows.length - unique.length}<br>
+            Valid analyzed: ${unique.length}<br>
+            Failed: ${saveResults.failed}
+          `,
+          'error'
+        );
+      } else {
+        showStatusMessage('Failed to save feedback. Please try again.', 'error');
+      }
+    } catch (err) {
+      console.error('CSV submit error:', err);
+      showStatusMessage('Something went wrong while saving. Please try again.', 'error');
+    } finally {
+      setSubmittingState('csv', false);
     }
   };
   reader.readAsText(fileInput.files[0]);
@@ -140,35 +185,52 @@ document.getElementById('text-upload-form').addEventListener('submit', async fun
   e.preventDefault();
   const textInput = document.getElementById('textInput').value;
   
+  if (isTextSubmitting) return;
+  
   if (!textInput.trim()) {
-    const resultsDiv = document.getElementById('validation-results');
-    resultsDiv.className = 'validation-results error';
-    resultsDiv.textContent = 'Please enter some feedback text.';
+    showStatusMessage('Please enter some feedback text.', 'error');
     return;
   }
   
   const rows = parseCSV(textInput);
-  const { unique, duplicates } = validateAndCleanFeedback(rows);
+  const { unique } = validateAndCleanFeedback(rows);
   
-  const resultsDiv = document.getElementById('validation-results');
-  
-  // Save to database
-  resultsDiv.className = 'validation-results';
-  resultsDiv.innerHTML = '<b>Saving to database...</b>';
-  const saveResults = await saveFeedbackToDB(unique);
-  
-  // Success message
-  if (saveResults.success > 0) {
-    resultsDiv.className = 'validation-results success';
-    resultsDiv.innerHTML = `
-      ✓ Successfully uploaded ${saveResults.success} feedback entries!<br>
-      ${duplicates.length > 0 ? `Removed ${duplicates.length} duplicates.` : ''}
-      <br><br><a href="dashboard.html" style="color: #065f46; font-weight: 600;">View dashboard →</a>
-    `;
-    document.getElementById('textInput').value = '';
-  } else {
-    resultsDiv.className = 'validation-results error';
-    resultsDiv.textContent = 'Failed to upload feedback. Please try again.';
+  try {
+    setSubmittingState('text', true);
+    showStatusMessage('<b>Submitting...</b>', '');
+    const saveResults = await saveFeedbackToDB(unique);
+    
+    if (saveResults.success > 0 && saveResults.failed === 0) {
+      showStatusMessage(
+        `
+          ✓ Feedback saved.<br>
+          Total uploaded: ${rows.length}<br>
+          Removed: ${rows.length - unique.length}<br>
+          Valid analyzed: ${unique.length}<br>
+          <br><a href="dashboard.html" style="color: #065f46; font-weight: 600;">View dashboard →</a>
+        `,
+        'success'
+      );
+      document.getElementById('textInput').value = '';
+    } else if (saveResults.success > 0) {
+      showStatusMessage(
+        `
+          ✓ Feedback saved with some errors.<br>
+          Total uploaded: ${rows.length}<br>
+          Removed: ${rows.length - unique.length}<br>
+          Valid analyzed: ${unique.length}<br>
+          Failed: ${saveResults.failed}
+        `,
+        'error'
+      );
+    } else {
+      showStatusMessage('Failed to save feedback. Please try again.', 'error');
+    }
+  } catch (err) {
+    console.error('Text submit error:', err);
+    showStatusMessage('Something went wrong while saving. Please try again.', 'error');
+  } finally {
+    setSubmittingState('text', false);
   }
 });
 

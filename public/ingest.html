@@ -37,7 +37,7 @@
           <p id="file-helper" class="helper-text">CSV or TXT files supported</p>
         </div>
 
-        <button type="submit" class="btn-primary" tabindex="2">
+        <button type="submit" class="btn-primary" id="csv-submit-btn" tabindex="2">
           <span>Upload file</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="9 18 15 12 9 6"></polyline>
@@ -57,10 +57,10 @@ Example:
 Great product, very satisfied!
 The checkout process was confusing."></textarea>
         </div>
-        <button type="submit" class="btn-secondary" tabindex="4">Submit text</button>
+        <button type="submit" class="btn-secondary" id="text-submit-btn" tabindex="4">Submit text</button>
       </form>
 
-      <div id="validation-results" class="validation-results"></div>
+      <div id="validation-results" class="validation-results" role="status" aria-live="polite" aria-atomic="true"></div>
 
       <div class="card-footer">
         <a href="dashboard.html" class="link-secondary" tabindex="5">View insights dashboard →</a>
