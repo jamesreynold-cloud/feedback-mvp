@@ -135,6 +135,20 @@ document.getElementById('csv-upload-form').addEventListener('submit', async func
     showStatusMessage('Please select a file first.', 'error');
     return;
   }
+
+  const selectedFile = fileInput.files[0];
+  const fileName = selectedFile.name || '';
+  const lowerName = fileName.toLowerCase();
+
+  if (!lowerName.endsWith('.txt')) {
+    showStatusMessage('Only .txt files are allowed.', 'error');
+    return;
+  }
+
+  if (!lowerName.includes('feedback')) {
+    showStatusMessage('Filename must include “feedback”. Please rename your file.', 'error');
+    return;
+  }
   
   const reader = new FileReader();
   reader.onload = async function(event) {
