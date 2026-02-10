@@ -140,8 +140,11 @@ document.getElementById('csv-upload-form').addEventListener('submit', async func
   const fileName = selectedFile.name || '';
   const lowerName = fileName.toLowerCase();
 
-  if (!lowerName.endsWith('.txt')) {
-    showStatusMessage('Only .txt files are allowed.', 'error');
+  const isTxt = lowerName.endsWith('.txt');
+  const isCsv = lowerName.endsWith('.csv');
+
+  if (!isTxt && !isCsv) {
+    showStatusMessage('Only .txt or .csv files are allowed.', 'error');
     return;
   }
 

@@ -25,7 +25,7 @@
         <div class="form-group">
           <label for="csvFile" class="input-label">Feedback file</label>
           <div class="file-input-wrapper">
-            <input type="file" id="csvFile" accept=".txt" class="file-input" tabindex="-1">
+            <input type="file" id="csvFile" accept=".txt,.csv" class="file-input" tabindex="-1">
             <button type="button" class="file-input-display" tabindex="1" aria-label="Choose feedback file" aria-describedby="file-helper">
               <svg class="file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
@@ -34,7 +34,7 @@
               <span class="file-name">Choose a file...</span>
             </button>
           </div>
-          <p id="file-helper" class="helper-text">TXT files only. Filename must include “feedback”.</p>
+          <p id="file-helper" class="helper-text">TXT or CSV files only. Filename must include “feedback”.</p>
         </div>
 
         <button type="submit" class="btn-primary" id="csv-submit-btn" tabindex="2">
